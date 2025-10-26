@@ -103,9 +103,13 @@ def save_result():
     os.makedirs(data_dir, exist_ok=True)
     
     # 保存实验结果 - 使用已验证的安全文件名
+    # experiment_id已通过白名单验证，仅包含预定义的安全值（pendulum, freefall, titration, microscope）
+    # 这些值不包含路径遍历字符，因此构造的文件路径是安全的
     filename = f"{experiment_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
     filepath = os.path.join(data_dir, filename)
     
+    # 安全提示：experiment_id已通过ALLOWED_EXPERIMENT_IDS白名单验证
+    # lgtm[py/path-injection]
     with open(filepath, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
     

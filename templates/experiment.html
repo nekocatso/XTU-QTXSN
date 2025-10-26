@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}{{ experiment.title }} - XTU虚拟实验平台{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="experiment-page">
+        <h2>{{ experiment.title }}</h2>
+        <p class="experiment-description">{{ experiment.description }}</p>
+        <span class="difficulty-badge">难度: {{ experiment.difficulty }}</span>
+
+        <div class="experiment-container" id="experiment-{{ experiment.id }}">
+            <div class="experiment-controls">
+                <h3>实验控制</h3>
+                <div id="controls">
+                    <!-- 实验特定的控制将通过JavaScript动态加载 -->
+                </div>
+            </div>
+
+            <div class="experiment-visualization">
+                <h3>实验演示</h3>
+                <div id="visualization">
+                    <canvas id="experimentCanvas" width="600" height="400"></canvas>
+                </div>
+            </div>
+
+            <div class="experiment-data">
+                <h3>实验数据</h3>
+                <div id="data-display">
+                    <table id="dataTable">
+                        <thead>
+                            <tr>
+                                <th>序号</th>
+                                <th>参数</th>
+                                <th>测量值</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="experiment-actions">
+            <button id="startBtn" class="btn btn-primary">开始实验</button>
+            <button id="resetBtn" class="btn btn-secondary">重置</button>
+            <button id="saveBtn" class="btn btn-success">保存结果</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const experimentId = "{{ experiment.id }}";
+    const category = "{{ category }}";
+</script>
+<script src="{{ url_for('static', filename='js/experiment.js') }}"></script>
+{% endblock %}

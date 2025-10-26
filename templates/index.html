@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <section class="hero">
+        <h2>欢迎来到XTU虚拟实验平台</h2>
+        <p>在线进行物理、化学、生物等多学科虚拟实验</p>
+    </section>
+
+    <section class="experiments-section">
+        {% for category_id, category_data in experiments.items() %}
+        <div class="experiment-category">
+            <h3>{{ category_data.name }}</h3>
+            <div class="experiment-grid">
+                {% for exp in category_data.experiments %}
+                <div class="experiment-card">
+                    <h4>{{ exp.title }}</h4>
+                    <p>{{ exp.description }}</p>
+                    <span class="difficulty">难度: {{ exp.difficulty }}</span>
+                    <a href="{{ url_for('experiment', category=category_id, exp_id=exp.id) }}" 
+                       class="btn">开始实验</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </section>
+</div>
+{% endblock %}

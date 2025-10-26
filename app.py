@@ -87,13 +87,23 @@ def save_result():
     """保存实验结果"""
     data = request.get_json()
     
+    # 验证experiment_id，防止路径遍历攻击
+    experiment_id = data.get('experiment_id', '')
+    # 仅允许字母、数字、下划线和连字符
+    if not experiment_id or not all(c.isalnum() or c in '_-' for c in experiment_id):
+        return jsonify({'status': 'error', 'message': '无效的实验ID'}), 400
+    
     # 确保data目录存在
     data_dir = os.path.join('experiments', 'data')
     os.makedirs(data_dir, exist_ok=True)
     
-    # 保存实验结果
-    filename = f"{data.get('experiment_id')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    # 保存实验结果 - 使用安全的文件名
+    filename = f"{experiment_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
     filepath = os.path.join(data_dir, filename)
+    
+    # 确保路径在预期目录内（防止路径遍历）
+    if not os.path.abspath(filepath).startswith(os.path.abspath(data_dir)):
+        return jsonify({'status': 'error', 'message': '无效的文件路径'}), 400
     
     with open(filepath, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
@@ -111,4 +121,8 @@ def about():
     return render_template('about.html')
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # 仅在开发环境中启用debug模式
+    # 生产环境应使用环境变量控制，或使用WSGI服务器
+    import sys
+    debug_mode = '--debug' in sys.argv
+    app.run(debug=debug_mode, host='0.0.0.0', port=5000)

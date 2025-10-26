@@ -57,6 +57,12 @@ EXPERIMENTS = {
     }
 }
 
+# 构建允许的实验ID白名单（用于安全验证）
+ALLOWED_EXPERIMENT_IDS = set()
+for category_data in EXPERIMENTS.values():
+    for exp in category_data['experiments']:
+        ALLOWED_EXPERIMENT_IDS.add(exp['id'])
+
 @app.route('/')
 def index():
     """主页"""
@@ -87,23 +93,18 @@ def save_result():
     """保存实验结果"""
     data = request.get_json()
     
-    # 验证experiment_id，防止路径遍历攻击
+    # 验证experiment_id是否在白名单中（防止路径遍历攻击）
     experiment_id = data.get('experiment_id', '')
-    # 仅允许字母、数字、下划线和连字符
-    if not experiment_id or not all(c.isalnum() or c in '_-' for c in experiment_id):
+    if experiment_id not in ALLOWED_EXPERIMENT_IDS:
         return jsonify({'status': 'error', 'message': '无效的实验ID'}), 400
     
     # 确保data目录存在
     data_dir = os.path.join('experiments', 'data')
     os.makedirs(data_dir, exist_ok=True)
     
-    # 保存实验结果 - 使用安全的文件名
+    # 保存实验结果 - 使用已验证的安全文件名
     filename = f"{experiment_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
     filepath = os.path.join(data_dir, filename)
-    
-    # 确保路径在预期目录内（防止路径遍历）
-    if not os.path.abspath(filepath).startswith(os.path.abspath(data_dir)):
-        return jsonify({'status': 'error', 'message': '无效的文件路径'}), 400
     
     with open(filepath, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
